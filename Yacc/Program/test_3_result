@@ -1,0 +1,14 @@
+Line 1 :/*Test file of Syntax errer: Out of symbol.  But it can go through*/
+Line 2 :class Point {
+Line 3 :	int z;
+Line 4 :	/*Need  ',' before y*/
+ Error : syntax error, unexpected ID : "y" in line 5 , char 8
+Line 5 :	int x y ;(Error : Class未宣告使用: y)
+Line 6 :	float w;
+Line 7 :}
+Line 8 :class Test {
+Line 9 :	int d;
+Line 10 :	/*Need ';' at EOL*/
+Line 11 :	Point p = new Point()
+Line 12 :	int w,q;(Error : Class未宣告使用: q)(Error : 重複宣告 : ;)
+Line 13 :}

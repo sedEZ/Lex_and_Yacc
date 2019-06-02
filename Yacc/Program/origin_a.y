@@ -1,0 +1,288 @@
+%{
+	#include<stdio.h>
+	#include<stdlib.h>
+	#include<string.h>
+	#define YYERROR_VERBOSE
+	#define YYDEBUG 1
+	extern int yylex();
+	void yyerror(const char *str);
+	extern unsigned int lineCount, charCount ,idCount;
+	extern char* yytext;
+%}
+%error-verbose
+%union{
+	char* name;
+};
+%token<name> A ABSTRACT B BACKSLASH BEQ BIGGER BINARY_AND BINARY_OR BREAK BOOLEAN BYTE C CASE CATCH CARET CARET_EQUAL CHAR CLASS COLON COMMA CONST CONTINUE D DEFAULT DEVIDE DEVIDE_EQUAL DO DOT DOUBLE DOUBLE_QUOTATION E EIGHT_NINE ELSE EQUAL EQUAL_EQUAL ESCAPE_CHARACTER EXTENDS F FALSE FINAL FINALLY FLOAT FOR GOTO IF IMPLEMENTS IMPORT INSTANCEOF INT INTERFACE KEYWORDS LBB LEQ LL LL_EQUAL LMB LONG LONG_INDICATOR LSB MINUS MINUS_EQUAL MINUS_MINUS MODULO MODULO_EQUAL MULTIPLY MULTIPLY_EQUAL NATIVE NEGATION NEW NOT NOT_EQUAL Null ONE_TO_SEVEN PACKAGE PLUS PLUS_EQUAL PLUS_PLUS PRIVATE PROTECTED PUBLIC RBB RETURN RMB RR RR_EQUAL RRR RRR_EQUAL RSB SEMICOLON SHORT SINGLE_QUOTATION SMALLER STATIC SUPER SWITCH SYNCHRONIZED THIS THROW THROWS TRANSIENT TRUE TRY UNIARY_AND UNIARY_AND_EQUAL UNIARY_OR UNIARY_OR_EQUAL VALID_STRING_CHARACTER VOID VOLATILE WHILE X ZERO ID LOWER_B LOWER_F LOWER_N LOWER_T LOWER_R
+%type<name> goal
+
+%start goal
+%%
+
+goal : compilation_unit
+compilation_unit : package_declaration import_declarations type_declarations | type_declarations
+
+//Declarations
+package_declaration : PACKAGE package_name SEMICOLON
+import_declarations : import_declaration  | import_declarations import_declaration
+import_declaration : single_type_import_declaration 
+                    | type_import_on_demand_declaration
+single_type_import_declaration : IMPORT type_name SEMICOLON
+type_import_on_demand_declaration : IMPORT package_name DOT MULTIPLY SEMICOLON
+type_declarations : type_declaration | type_declarations type_declaration
+type_declaration : class_declaration | interface_declaration | SEMICOLON
+class_declaration : class_modifiers CLASS identifier super interfaces class_body
+		  | class_modifiers CLASS identifier class_body
+		  | class_modifiers CLASS identifier interfaces class_body
+		  | class_modifiers CLASS identifier super class_body
+		  | CLASS identifier super interfaces class_body
+                  | CLASS identifier class_body
+                  | CLASS identifier interfaces class_body
+                  | CLASS identifier super class_body
+class_modifiers : class_modifier | class_modifiers class_modifier
+class_modifier : PUBLIC | ABSTRACT | FINAL
+super : EXTENDS class_type
+interfaces : IMPLEMENTS interface_type_list
+interface_type_list : interface_type | interface_type_list COMMA interface_type
+class_body : LBB class_body_declarations RBB
+class_body_declarations : class_body_declaration 
+			| class_body_declarations class_body_declaration
+class_body_declaration : class_member_declaration 
+                       | static_initializer | constructor_declaration
+class_member_declaration : field_declaration | method_declaration
+static_initializer : STATIC block
+constructor_declaration : constructor_modifiers constructor_declarator
+                         throws constructor_body
+constructor_modifiers : constructor_modifier 
+                      | constructor_modifiers constructor_modifier
+constructor_modifier : PUBLIC | PROTECTED | PRIVATE
+constructor_declarator : simple_type_name LSB formal_parameter_list RSB
+formal_parameter_list : formal_parameter | formal_parameter_list COMMA formal_parameter
+formal_parameter : type variable_declarator_id
+throws : THROWS class_type_list
+class_type_list : class_type | class_type_list COMMA class_type
+constructor_body : LBB explicit_constructor_invocation block_statements RBB
+explicit_constructor_invocation: THIS LSB argument_list RSB  | SUPER LSB argument_list RSB
+field_declaration : field_modifiers type variable_declarators SEMICOLON
+field_modifiers : field_modifier | field_modifiers field_modifier
+field_modifier : PUBLIC | PROTECTED | PRIVATE | STATIC | FINAL | TRANSIENT | VOLATILE | error
+variable_declarators : variable_declarator  | variable_declarators COMMA variable_declarator
+variable_declarator : variable_declarator_id 
+                    | variable_declarator_id EQUAL variable_initializer
+variable_declarator_id : identifier | variable_declarator_id LMB RMB
+method_declaration : method_header method_body
+method_header : method_modifiers result_type method_declarator throws 
+	      | method_modifiers result_type method_declarator
+result_type : type | VOID
+method_modifiers : method_modifier | method_modifiers method_modifier
+method_modifier : PUBLIC | PROTECTED | PRIVATE | STATIC | ABSTRACT | FINAL 
+                | SYNCHRONIZED | NATIVE
+method_declarator : identifier LSB formal_parameter_list RSB | identifier LSB RSB
+method_body : block | SEMICOLON
+interface_declaration : interface_modifiers INTERFACE identifier 
+                        extends_interfaces interface_body
+interface_modifiers : interface_modifier 
+                    | interface_modifiers interface_modifier
+interface_modifier : PUBLIC | ABSTRACT
+extends_interfaces : EXTENDS interface_type | extends_interfaces COMMA interface_type
+interface_body : LBB interface_member_declarations RBB
+interface_member_declarations : interface_member_declaration
+                              | interface_member_declarations interface_member_declaration
+interface_member_declaration : constant_declaration   | abstract_method_declaration
+constant_declaration : constant_modifiers type variable_declarator
+constant_modifiers : PUBLIC | STATIC | FINAL
+abstract_method_declaration: abstract_method_modifiers result_type method_declarator throws SEMICOLON
+abstract_method_modifiers : abstract_method_modifier 
+                          | abstract_method_modifiers abstract_method_modifier
+abstract_method_modifier : PUBLIC | ABSTRACT
+array_initializer : LBB variable_initializers COMMA  RBB
+variable_initializers : variable_initializer  | variable_initializers COMMA variable_initializer
+variable_initializer : expression | array_initializer
+
+//Types
+type : primitive_type | reference_type
+primitive_type : numeric_type | BOOLEAN
+numeric_type : integral_type | floating_point_type
+integral_type : BYTE | SHORT | INT | LONG | CHAR
+floating_point_type : FLOAT | DOUBLE
+reference_type : class_or_interface_type | array_type
+class_or_interface_type : class_type | interface_type
+class_type : type_name
+interface_type : type_name
+array_type : type LMB RMB
+
+
+//Blocks and Commands
+block : LBB block_statements RBB
+block_statements : block_statement | block_statement block_statements
+block_statement : local_variable_declaration_statement | statement
+local_variable_declaration_statement : local_variable_declaration SEMICOLON
+local_variable_declaration : type variable_declarators
+statement : statement_without_trailing_substatement
+          | labeled_statement | if_then_statement | if_then_else_statement
+          | while_statement | for_statement
+statement_no_short_if : statement_without_trailing_substatement
+                      | labeled_statement_no_short_if | if_then_else_statement_no_short_if
+                      | while_statement_no_short_if | for_statement_no_short_if
+statement_without_trailing_substatement : block | empty_statement 
+                                        | expression_statement | switch_statement | do_statement 
+                                        | break_statement | continue_statement | return_statement 
+                                        | synchronized_statement | throws_statement | try_statement
+empty_statement : SEMICOLON
+labeled_statement : identifier COLON statement
+labeled_statement_no_short_if : identifier COLON statement_no_short_if
+expression_statement : statement_expression SEMICOLON
+statement_expression : assignment | preincrement_expression 
+                     | postincrement_expression | predecrement_expression
+                     | postdecrement_expression | method_invocation 
+                     | class_instance_creation_expression
+if_then_statement: IF LSB expression RSB statement
+if_then_else_statement: IF LSB expression RSB statement_no_short_if ELSE statement
+if_then_else_statement_no_short_if : IF LSB expression RSB statement_no_short_if 
+                                      ELSE statement_no_short_if
+switch_statement : SWITCH LSB expression RSB switch_block
+switch_block : LBB switch_block_statement_groups switch_labels RBB
+switch_block_statement_groups : switch_block_statement_group
+                              | switch_block_statement_groups switch_block_statement_group
+switch_block_statement_group : switch_labels block_statements
+switch_labels : switch_label | switch_labels switch_label
+switch_label : CASE constant_expression COLON | DEFAULT COLON
+while_statement : WHILE LSB expression RSB statement
+while_statement_no_short_if : WHILE LSB expression RSB statement_no_short_if
+do_statement : DO statement WHILE LSB expression RSB SEMICOLON
+for_statement : FOR LSB for_init SEMICOLON expression SEMICOLON for_update RSB statement
+for_statement_no_short_if : FOR LSB for_init SEMICOLON expression SEMICOLON for_update RSB                                     statement_no_short_if
+for_init : statement_expression_list | local_variable_declaration
+for_update : statement_expression_list
+statement_expression_list : statement_expression                                                                               | statement_expression_list COMMA statement_expression
+break_statement : BREAK identifier SEMICOLON
+continue_statement : CONTINUE identifier SEMICOLON
+return_statement : RETURN expression SEMICOLON
+throws_statement : THROW expression SEMICOLON
+synchronized_statement : SYNCHRONIZED LSB expression RSB block
+try_statement : TRY block catches | TRY block catches finally
+catches : catch_clause | catches catch_clause
+catch_clause : CATCH LSB formal_parameter RSB block
+finally : FINALLY block
+
+//Expressions
+constant_expression : expression
+expression : assignment_expression
+assignment_expression : conditional_expression | assignment
+assignment : left_hand_side assignment_operator assignment_expression
+left_hand_side : expression_name | field_access | array_access
+assignment_operator :  EQUAL | MULTIPLY_EQUAL | DEVIDE_EQUAL | MODULO_EQUAL | PLUS_EQUAL | MINUS_EQUAL | LL_EQUAL | RR_EQUAL  | RRR_EQUAL | UNIARY_AND_EQUAL | CARET_EQUAL | UNIARY_OR_EQUAL
+conditional_expression : conditional_or_expression
+                       | conditional_or_expression  expression COLON conditional_expression
+conditional_or_expression : conditional_and_expression
+                          | conditional_or_expression BINARY_OR conditional_and_expression
+conditional_and_expression : inclusive_or_expression
+                           | conditional_and_expression BINARY_AND inclusive_or_expression
+inclusive_or_expression : exclusive_or_expression
+                        | inclusive_or_expression UNIARY_OR exclusive_or_expression
+exclusive_or_expression : and_expression
+                        | exclusive_or_expression CARET and_expression
+and_expression : equality_expression
+               | and_expression UNIARY_AND equality_expression
+equality_expression : relational_expression
+                    | equality_expression EQUAL_EQUAL relational_expression
+                    | equality_expression NOT_EQUAL relational_expression
+relational_expression : shift_expression 
+                      | relational_expression SMALLER shift_expression
+                      | relational_expression BIGGER shift_expression
+                      | relational_expression LEQ shift_expression
+                      | relational_expression BEQ shift_expression
+                      | relational_expression INSTANCEOF reference_type
+shift_expression : additive_expression
+                 | shift_expression LL additive_expression
+                 | shift_expression RR additive_expression
+                 | shift_expression RRR additive_expression
+additive_expression : multiplicative_expression
+                 | additive_expression PLUS multiplicative_expression
+                 | additive_expression MINUS multiplicative_expression
+multiplicative_expression : unary_expression
+                          | multiplicative_expression MULTIPLY unary_expression
+                          | multiplicative_expression DEVIDE unary_expression
+                          | multiplicative_expression MODULO unary_expression
+cast_expression : LSB primitive_type RSB unary_expression 
+                | LSB reference_type RSB unary_expression_not_plus_minus
+unary_expression : preincrement_expression | predecrement_expression
+                 | PLUS unary_expression | MINUS unary_expression
+                 | unary_expression_not_plus_minus
+predecrement_expression : MINUS_MINUS unary_expression
+preincrement_expression : PLUS_PLUS unary_expression
+unary_expression_not_plus_minus : postfix_expression | NEGATION unary_expression 
+                                | NOT unary_expression | cast_expression
+postdecrement_expression : postfix_expression MINUS_MINUS
+postincrement_expression : postfix_expression PLUS_PLUS
+postfix_expression : primary | expression_name 
+                   | postincrement_expression | postdecrement_expression
+method_invocation : method_name LSB argument_list RSB 
+                  | primary DOT identifier LSB argument_list RSB 
+		  | SUPER DOT identifier LSB argument_list RSB
+field_access : primary DOT identifier | SUPER DOT identifier
+primary : primary_no_new_array | array_creation_expression
+primary_no_new_array : literal | THIS | LSB expression RSB 
+                     | class_instance_creation_expression | field_access 
+                     | method_invocation | array_access
+class_instance_creation_expression : NEW class_type LSB argument_list RSB
+argument_list : expression | argument_list COMMA expression
+array_creation_expression : NEW primitive_type dim_exprs dims 
+                          | NEW class_or_interface_type dim_exprs dims
+dim_exprs : dim_expr | dim_exprs dim_expr
+dim_expr : LMB expression RMB
+dims : LMB RMB | dims LMB RMB
+array_access : expression_name LMB expression RMB | primary_no_new_array LMB expression RMB
+
+//Tokens
+package_name : identifier | package_name DOT identifier
+type_name : identifier | package_name DOT identifier
+simple_type_name : identifier
+expression_name : identifier | ambiguous_name DOT identifier
+method_name : identifier | ambiguous_name DOT identifier
+ambiguous_name: identifier | ambiguous_name DOT identifier
+literal : integer_literal | floating_point_literal | boolean_literal 
+        | character_literal | string_literal | null_literal
+integer_literal : decimal_integer_literal | hex_integer_literal | octal_integer_literal
+decimal_integer_literal : decimal_numeral integer_type_suffix | decimal_numeral
+hex_integer_literal :  hex_numeral integer_type_suffix | hex_numeral
+octal_integer_literal :  octal_numeral integer_type_suffix | octal_numeral
+integer_type_suffix :  LONG_INDICATOR
+decimal_numeral : ZERO | non_zero_digit digits | non_zero_digit
+digits : digit | digits digit
+digit : ZERO | non_zero_digit
+non_zero_digit : ONE_TO_SEVEN  | EIGHT_NINE
+hex_numeral : ZERO X hex_digit | hex_numeral hex_digit
+hex_digit : ZERO | ONE_TO_SEVEN | EIGHT_NINE | A | B | C | D | E | F | LOWER_B | LOWER_F
+octal_numeral : ZERO octal_digit | octal_numeral octal_digit
+octal_digit : ZERO | ONE_TO_SEVEN
+floating_point_literal : digits DOT digits exponent_part float_type_suffix
+		       | DOT digits exponent_part float_type_suffix
+                       | digits exponent_part float_type_suffix
+exponent_part : exponent_indicator signed_integer
+exponent_indicator : E
+signed_integer : sign digits
+sign : PLUS |  MINUS
+float_type_suffix : D | F | LOWER_F
+boolean_literal : TRUE | FALSE
+character_literal : SINGLE_QUOTATION single_character SINGLE_QUOTATION 
+	          | SINGLE_QUOTATION escape_sequence SINGLE_QUOTATION
+single_character : input_character_except_SINGLE_QUOTATION_and_BACKSLASH
+string_literal : DOUBLE_QUOTATION string_characters DOUBLE_QUOTATION
+string_characters : string_character | string_characters string_character
+string_character : input_character_except_DOUBLE_QUOTATION_and_BACKSLASH | escape_character
+input_character_except_SINGLE_QUOTATION_and_BACKSLASH : VALID_STRING_CHARACTER | DOUBLE_QUOTATION
+input_character_except_DOUBLE_QUOTATION_and_BACKSLASH : VALID_STRING_CHARACTER | SINGLE_QUOTATION
+escape_sequence : escape_character | escape_character escape_sequence
+escape_character : BACKSLASH LOWER_B | BACKSLASH LOWER_F | BACKSLASH ESCAPE_CHARACTER | BACKSLASH BACKSLASH | BACKSLASH DOUBLE_QUOTATION
+null_literal : Null
+//keyword : ABSTRACT | BOOLEAN | BREAK | BYTE | CASE | CATCH | CHAR | CLASS | CONST | CONTINUE | DEFAULT | DO | DOUBLE | ELSE | EXTENDS | FINAL | FINALLY | FLOAT | FOR | GOTO | IF | IMPLEMENTS | IMPORT | INSTANCEOF | INT | INTERFACE | LONG | NATIVE | NEW | PACKAGE | PRIVATE | PROTECTED | PUBLIC | RETURN | SHORT | STATIC | SUPER | SWITCH | SYNCHRONIZED | THIS | THROW | THROWS | TRANSIENT | TRY | VOID | VOLATILE | WHILE
+identifier : ID | A | B | C | D | E | F | X | LOWER_B | LOWER_F | LOWER_N | LOWER_T | LOWER_R
+%%
+int main(){
+	yyparse();
+	return 0;
+}
+void yyerror(const char *str){
+	fprintf(stderr," Error : %s \"%s\" in line %d , char %d\n",str,yytext,lineCount,charCount);
+}

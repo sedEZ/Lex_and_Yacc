@@ -1,0 +1,24 @@
+#Lex 版本
+	flex 2.6.4
+#Yacc版本
+	bison (GNU Bison) 3.0.4
+#作業平台
+	Ubuntu 18.04
+#執行方式
+ 	$ make all;./a.out < [Input_File]
+
+#處理過程筆記
+1.所有括號裡有argument list或parameters list或block statements的都要多加沒有參數的版本
+2.為了符合simple JAVA,所有具有modifier的都要通融讓他可以沒有modifier
+3.宣告array:<array creation expression>結尾會規定要有一組空白的[],要加上不用有的
+4.可以把大部分的terminal轉成nonterminal(Ex: 原本是INT的部份變成INTs ,然後加上一個nonterminal INTs : INT | error )以便recovery
+5.modifier一定要terminal,不要加上nonterminal
+6.我自己加入新規則：statement可以是identifier SEMICOLON(在statement_expression底下加入identifier)
+7.Constructer要改，constructor_declaration要加上沒參數的版本,constructor_declarator要加上沒參數的版本 ,constructor_body要加上沒參數的版本.只有block statements的版本與純粹semicolons的
+8.建立symbol table時,利用struct中的變數界定scope
+9.建立symbol table時,要建立三種查表方式,分別用於method&variable declaration.method&variable invocation與Class Type是否以宣告過的確認
+
+#額外實做
+1.Label scope的實做
+2.讀入string與跳脫字元
+3.減負數

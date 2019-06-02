@@ -1,0 +1,41 @@
+cat rules | sed -e 's/(/LSB/g' \
+-e 's/)/RSB/g' \
+-e 's/\[/LMB/g' \
+-e 's/\]/RMB/g' \
+-e 's/{/LBB/g' \
+-e 's/}/RBB/g' \
+-e 's/<<=/LL_EQUAL/g' \
+-e 's/<</LL/g' \
+-e 's/>>>=/RRR_EQUAL/g' \
+-e 's/>>=/RR_EQUAL/g' \
+-e 's/>>/RR/g' \
+-e 's/>>>/RRR/g' \
+-e 's/<=/LEQ/g' \
+-e 's/>=/BEQ/g' \
+-e 's/^[^<]*[0-9]*\.[^<]*//g' \
+-e 's/::=/TMP_COLON/g' \
+-e 's/:/COLON/g' \
+-e 's/TMP_COLON/:/g' \
+-e 's/\./DOT/g' \
+-e 's/,/COMMA/g' \
+-e 's/;/SEMICOLON/g' \
+-e 's/\*=/MULTIPLY_EQUAL/g' \
+-e 's/\+=/PLUS_EQUAL/g' \
+-e 's/\-=/MINUS_EQUAL/g' \
+-e 's/\/=/DEVIDE_EQUAL/g' \
+-e 's/%=/MODULO_EQUAL/g' \
+-e 's/\-\-/MINUS_MINUS/g' \
+-e 's/\+\+/PLUS_PLUS/g' \
+-e 's/%/MODULO/g' \
+-e 's/\*/MULTIPLY/g' \
+-e 's/\+/PLUS/g' \
+-e 's/\-/MINUS/g' \
+-e 's/\//DEVIDE/g' \
+-e 's/\&=/UNIARY_AND_EQUAL/g' \
+-e 's/\^=/CARET_EQUAL/g' \
+-e 's/|=/UNIARY_OR_EQUAL/g' \
+-e 's/<\([a-z]*\)* \([a-z]*\)* \([a-z]*\)* \([a-z]*\)* \([a-z]*\)*>/\1_\2_\3_\4_\5/g' \
+-e 's/<\([a-z]*\)* \([a-z]*\)* \([a-z]*\)* \([a-z]*\)*>/\1_\2_\3_\4/g' \
+-e 's/<\([a-z]*\)* \([a-z]*\)* \([a-z]*\)*>/\1_\2_\3/g' \
+-e 's/<\([a-z]*\)* \([a-z]*\)*>/\1_\2/g' \
+-e 's/<\([a-z]*\)*>/\1/g' 

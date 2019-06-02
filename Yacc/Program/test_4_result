@@ -1,0 +1,25 @@
+Line 1 :/*Test file: Duplicate declaration in different scope and same scope*/
+Line 2 :class Point
+Line 3 :{
+Line 4 :	int x, y;
+Line 5 :	int p;
+Line 6 :	boolean test()
+Line 7 :	{
+Line 8 :		/*Another x, but in different scopes*/
+Line 9 :		int x(Error : 重複宣告 : x) ;
+Line 10 :		float w;
+Line 11 :		/*Another x in the same scope*/
+Line 12 :		char x;
+Line 13 :		{
+Line 14 :			/*Another x, but in different scopes*/
+Line 15 :			boolean x(Error : 重複宣告 : x);
+Line 16 :		}
+Line 17 :		/*Another w in the same scope*/
+Line 18 :		int w(Error : 重複宣告 : w);
+Line 19 :	}
+Line 20 :}
+Line 21 :class Test
+Line 22 :{
+Line 23 :	/*Another p, but in different scopes*/
+Line 24 :	Point p = new Point();
+Line 25 :}
