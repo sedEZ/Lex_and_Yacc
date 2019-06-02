@@ -1,0 +1,75 @@
+flex version	:2.6.4
+OS		:Ubuntu 18.04.2 LTS
+Useage		:$ make all;./a.out < [path to test file]
+如何處理問題	:
+	Q1: 分辨token
+	A1: 直接在defination part宣告符合token的regular expression判斷.
+	
+	Q2: 分辨comment
+	A2: 單行的comment直接寫regexp就行;
+	    跨行的則較麻煩,因為遇到\n時似乎讀取時就會分段
+	    必須用|的方式判別字元及\n,才能達到跨行辨識
+
+	Q3: Recovery
+	A3: 利用rules判斷到相同長度的regexp時,會依照宣告順序判定優先格式的特性,
+	    在遇到invalid id時即可進行判斷.
+
+	Q4: Symbol Table
+	A4: 僅用calloc建造,sequential的進行搜尋,另用一個變數儲存id數量
+
+	Q5: 判定ID是否已被宣告
+	A5: 利用變數(idCheck)儲存狀態,遇到宣告的關鍵字(Type)時,將其設為1;
+	    另設一個變數(idCheck2),以辨識是否後面還有id待宣告,最後在遇到分號(;)時把狀態歸零
+
+遇到的問題	:
+	Q1: 要判斷變數是否已被宣告,但scope的判定並非在lexical analysis的階段完成,所以並沒辦法在lex檔
+	    中判定變數是否在相同的scope底下.
+	Q2: Multiline comment的判定實在令人費解,[.\n]不行但(.|\n)卻可行,雖然已解決,但仍不知原因.
+
+測試結果	:
+	Test file:
+// this is a comment // line */ /* with /* delimiters */ before the end
+
+public class Test2 {
+    int i = -100;
+    double d = 12.25e+6;
+
+    public static void main() {
+/* this is a comment // line with some /* and
+// delimiters */
+    }
+}
+
+	Result:
+gcc lex.yy.c -lfl
+[3]+  Done                    gedit Test/Test2.java
+Line 1, 1st char: 1,"// this is a comment // line */ /* with /* delimiters */ before the end
+" is a "comment".
+Line 2, 1st char: 1,"public" is a "reserved word".
+Line 2, 1st char: 8,"class" is a "reserved word".
+Line 2, 1st char: 14,"Test2" is an "ID".
+Line 2, 1st char: 20,"{" is a "symbol".
+Line 3, 1st char: 5,"int" is a "reserved word".
+Line 3, 1st char: 9,"i" is an "ID".
+Line 3, 1st char: 11,"=" is an "operator".
+Line 3, 1st char: 13,"-100" is an "Integer".
+Line 3, 1st char: 17,";" is a "symbol".
+Line 4, 1st char: 5,"double" is a "reserved word".
+Line 4, 1st char: 12,"d" is an "ID".
+Line 4, 1st char: 14,"=" is an "operator".
+Line 4, 1st char: 16,"12.25e+6" is a "real".
+Line 4, 1st char: 24,";" is a "symbol".
+Line 6, 1st char: 5,"public" is a "reserved word".
+Line 6, 1st char: 12,"static" is a "reserved word".
+Line 6, 1st char: 19,"void" is a "reserved word".
+Line 6, 1st char: 24,"main" is a "reserved word".
+Line 6, 1st char: 28,"(" is a "symbol".
+Line 6, 1st char: 29,")" is a "symbol".
+Line 6, 1st char: 31,"{" is a "symbol".
+Line 7, 1st char: 1,"/* this is a comment // line with some /* and
+// delimiters */" is a "comment".
+Line 8, 1st char: 5,"}" is a "symbol".
+Line 9, 1st char: 1,"}" is a "symbol".
+The symbol table contains:
+Test2 i d 
+

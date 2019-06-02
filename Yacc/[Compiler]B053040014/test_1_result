@@ -1,0 +1,19 @@
+Line 1 :/* Test file: Perfect test file
+Line 2 : * Compute sum = 1 + 2 + ... + n
+Line 3 : */
+Line 4 :class sigma {
+Line 5 :  final int n = 10;
+Line 6 :  int sum, index;
+Line 7 :  
+Line 8 :  main()
+Line 9 :  {
+Line 10 :    index = 0;
+Line 11 :    sum = 0;
+Line 12 :    while (index <= n) 
+Line 13 :    {
+Line 14 :      sum = sum + index;
+Line 15 :      index = index + 1;
+Line 16 :    } 
+Line 17 :    print(sum);
+Line 18 :  }   
+Line 19 :} 
