@@ -1,5 +1,5 @@
 # Lex_and_Yacc
-Lex與Yacc的實做
+simple JAVA compiler的實做
 
 #使用方式
 
